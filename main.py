@@ -12,15 +12,21 @@ from linebot.v3.messaging import (Configuration,
                                   TextMessage)
 from linebot.v3.webhooks import (MessageEvent,TextMessageContent)
 
+import google.generativeai as genai
+
 load_dotenv()
 
 app = FastAPI()
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 CHANNEL_KEY = os.getenv("CHANNEL_KEY")
+AI_KEY = os.getenv("AI_KEY")
 
 configuration = Configuration(access_token=ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_KEY)
+
+genai.configure(api_key=AI_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 @app.post("/message")
 async def message(request: Request):
@@ -42,11 +48,13 @@ async def message(request: Request):
 def handle_message(event: MessageEvent):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
+        
+        response = model.generate_content(event.message.text)
 
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=event.message.text)]
+                messages=[TextMessage(text=response)]
             )
         )
 
