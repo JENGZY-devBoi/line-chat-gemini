@@ -54,7 +54,7 @@ def handle_message(event: MessageEvent):
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=response)]
+                messages=[TextMessage(text=response.text)]
             )
         )
 
